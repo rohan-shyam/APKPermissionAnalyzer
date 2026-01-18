@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>APK Analysis Results</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+
+<body style="
+    margin:0;
+    font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, system-ui, sans-serif;
+    background:#ffffff;
+    color:#0f172a;
+">
+
+    <!-- Navbar -->
+    <header style="
+        display:flex;
+        justify-content:space-between;
+        align-items:center;
+        padding:20px 48px;
+        border-bottom:1px solid #e5e7eb;
+    ">
+        <div style="font-weight:600; font-size:18px;">
+            APK Analyzer
+        </div>
+
+        <nav style="font-size:14px; color:#475569;">
+            <a href="/" style="margin-right:24px; text-decoration:none; color:inherit;">Home</a>
+            <a href="#" style="margin-right:24px; text-decoration:none; color:inherit;">Docs</a>
+            <a href="#" style="text-decoration:none; color:inherit;">Pricing</a>
+        </nav>
+    </header>
+
+    <!-- Main Content -->
+    <main style="
+        max-width:1000px;
+        margin:0 auto;
+        padding:56px 24px;
+    ">
+
+        <!-- Page Heading -->
+        <section style="margin-bottom:40px;">
+            <h1 style="
+                font-size:40px;
+                font-weight:600;
+                letter-spacing:-0.02em;
+                margin-bottom:12px;
+            ">
+                APK Permission Analysis
+            </h1>
+
+            <p style="
+                font-size:18px;
+                color:#475569;
+                line-height:1.6;
+            ">
+                Static analysis results extracted from the APK manifest using Android SDK tools.
+            </p>
+        </section>
+
+        <!-- Summary Cards -->
+        <section style="
+            display:grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap:20px;
+            margin-bottom:48px;
+        ">
+            <div style="
+                border:1px solid #e5e7eb;
+                border-radius:12px;
+                padding:20px;
+            ">
+                <div style="font-size:13px; color:#64748b;">APK Name</div>
+                <div style="margin-top:6px; font-weight:500;">
+                    {{ apk_name|default:"Unknown" }}
+                </div>
+            </div>
+
+            <div style="
+                border:1px solid #e5e7eb;
+                border-radius:12px;
+                padding:20px;
+            ">
+                <div style="font-size:13px; color:#64748b;">Total Permissions</div>
+                <div style="margin-top:6px; font-weight:500;">
+                    {{ permissions|length }}
+                </div>
+            </div>
+
+            <div style="
+                border:1px solid #e5e7eb;
+                border-radius:12px;
+                padding:20px;
+            ">
+                <div style="font-size:13px; color:#64748b;">Analysis Type</div>
+                <div style="margin-top:6px; font-weight:500;">
+                    Static (Manifest)
+                </div>
+            </div>
+        </section>
+
+        <!-- Permissions Table -->
+        <section>
+            <h2 style="
+                font-size:22px;
+                font-weight:600;
+                margin-bottom:16px;
+            ">
+                Detected Permissions
+            </h2>
+
+            <div style="
+                border:1px solid #e5e7eb;
+                border-radius:12px;
+                overflow:hidden;
+            ">
+                <table style="
+                    width:100%;
+                    border-collapse:collapse;
+                    font-size:14px;
+                ">
+                    <thead>
+                        <tr style="background:#f8fafc;">
+                            <th style="
+                                text-align:left;
+                                padding:14px 16px;
+                                border-bottom:1px solid #e5e7eb;
+                            ">
+                                Permission
+                            </th>
+                            <th style="
+                                text-align:left;
+                                padding:14px 16px;
+                                border-bottom:1px solid #e5e7eb;
+                            ">
+                                Risk Level
+                            </th>
+                            <th style="
+                                text-align:left;
+                                padding:14px 16px;
+                                border-bottom:1px solid #e5e7eb;
+                            ">
+                                Description
+                            </th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {% for perm in permissions %}
+                        <tr>
+                            <td style="
+                                padding:14px 16px;
+                                border-bottom:1px solid #f1f5f9;
+                                font-family:monos
