@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>APK Analysis Results</title>
+    <title>APK Security Analysis</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
 
@@ -13,143 +13,189 @@
     color:#0f172a;
 ">
 
-    <!-- Navbar -->
-    <header style="
-        display:flex;
-        justify-content:space-between;
-        align-items:center;
-        padding:20px 48px;
-        border-bottom:1px solid #e5e7eb;
+<!-- Header -->
+<header style="
+    padding:24px 48px;
+    border-bottom:1px solid #e5e7eb;
+    font-weight:600;
+    font-size:18px;
+">
+    APK Permission Security Analysis
+</header>
+
+<main style="
+    max-width:1000px;
+    margin:0 auto;
+    padding:48px 24px;
+">
+
+<!-- APK Info -->
+<section style="margin-bottom:40px;">
+    <h1 style="font-size:36px; margin-bottom:8px;">
+        {{ apk_name }}
+    </h1>
+    <p style="color:#475569;">
+        Static manifest inspection using Android SDK tooling
+    </p>
+</section>
+
+<!-- Risk Score -->
+<section style="
+    border:1px solid #e5e7eb;
+    border-radius:12px;
+    padding:24px;
+    margin-bottom:48px;
+">
+    <h2 style="margin-bottom:12px;">Security Risk Score</h2>
+
+    <div id="score" style="
+        font-size:48px;
+        font-weight:600;
     ">
-        <div style="font-weight:600; font-size:18px;">
-            APK Analyzer
-        </div>
+        --
+    </div>
 
-        <nav style="font-size:14px; color:#475569;">
-            <a href="/" style="margin-right:24px; text-decoration:none; color:inherit;">Home</a>
-            <a href="#" style="margin-right:24px; text-decoration:none; color:inherit;">Docs</a>
-            <a href="#" style="text-decoration:none; color:inherit;">Pricing</a>
-        </nav>
-    </header>
-
-    <!-- Main Content -->
-    <main style="
-        max-width:1000px;
-        margin:0 auto;
-        padding:56px 24px;
+    <div id="rating" style="
+        margin-top:8px;
+        font-size:16px;
+        color:#475569;
     ">
+    </div>
+</section>
 
-        <!-- Page Heading -->
-        <section style="margin-bottom:40px;">
-            <h1 style="
-                font-size:40px;
-                font-weight:600;
-                letter-spacing:-0.02em;
-                margin-bottom:12px;
-            ">
-                APK Permission Analysis
-            </h1>
+<!-- Permission Table -->
+<section>
+    <h2 style="margin-bottom:16px;">Declared Permissions</h2>
 
-            <p style="
-                font-size:18px;
-                color:#475569;
-                line-height:1.6;
-            ">
-                Static analysis results extracted from the APK manifest using Android SDK tools.
-            </p>
-        </section>
+    <table style="
+        width:100%;
+        border-collapse:collapse;
+        font-size:14px;
+        border:1px solid #e5e7eb;
+        border-radius:12px;
+        overflow:hidden;
+    ">
+        <thead style="background:#f8fafc;">
+            <tr>
+                <th style="padding:12px; text-align:left;">Permission</th>
+                <th style="padding:12px; text-align:left;">Risk Weight</th>
+                <th style="padding:12px; text-align:left;">Impact</th>
+            </tr>
+        </thead>
+        <tbody id="permission-table">
+            {% for perm in permissions %}
+            <tr>
+                <td style="padding:12px; border-top:1px solid #e5e7eb; font-family:monospace;">
+                    {{ perm.name }}
+                </td>
+                <td style="padding:12px; border-top:1px solid #e5e7eb;" data-perm="{{ perm.name }}">
+                    --
+                </td>
+                <td style="padding:12px; border-top:1px solid #e5e7eb;">
+                    {{ perm.description }}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</section>
 
-        <!-- Summary Cards -->
-        <section style="
-            display:grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap:20px;
-            margin-bottom:48px;
-        ">
-            <div style="
-                border:1px solid #e5e7eb;
-                border-radius:12px;
-                padding:20px;
-            ">
-                <div style="font-size:13px; color:#64748b;">APK Name</div>
-                <div style="margin-top:6px; font-weight:500;">
-                    {{ apk_name|default:"Unknown" }}
-                </div>
-            </div>
+</main>
 
-            <div style="
-                border:1px solid #e5e7eb;
-                border-radius:12px;
-                padding:20px;
-            ">
-                <div style="font-size:13px; color:#64748b;">Total Permissions</div>
-                <div style="margin-top:6px; font-weight:500;">
-                    {{ permissions|length }}
-                </div>
-            </div>
+<script>
+/*
+    Realistic APK Risk Model (Calibrated)
+    ------------------------------------
+    Designed so legitimate apps do NOT hit 100
+*/
 
-            <div style="
-                border:1px solid #e5e7eb;
-                border-radius:12px;
-                padding:20px;
-            ">
-                <div style="font-size:13px; color:#64748b;">Analysis Type</div>
-                <div style="margin-top:6px; font-weight:500;">
-                    Static (Manifest)
-                </div>
-            </div>
-        </section>
+const SENSITIVE_PERMISSIONS = {
+    "android.permission.CAMERA": 20,
+    "android.permission.RECORD_AUDIO": 25,
+    "android.permission.ACCESS_FINE_LOCATION": 25,
+    "android.permission.ACCESS_COARSE_LOCATION": 15,
+    "android.permission.READ_CONTACTS": 25,
+    "android.permission.READ_SMS": 40,
+    "android.permission.SEND_SMS": 45,
+    "android.permission.REQUEST_INSTALL_PACKAGES": 45
+};
 
-        <!-- Permissions Table -->
-        <section>
-            <h2 style="
-                font-size:22px;
-                font-weight:600;
-                margin-bottom:16px;
-            ">
-                Detected Permissions
-            </h2>
+const MEDIUM_PERMISSIONS = {
+    "android.permission.INTERNET": 3,
+    "android.permission.ACCESS_NETWORK_STATE": 2,
+    "android.permission.RECEIVE_BOOT_COMPLETED": 5,
+    "android.permission.FOREGROUND_SERVICE": 2,
+    "android.permission.WAKE_LOCK": 1,
+    "com.android.vending.BILLING": 5
+};
 
-            <div style="
-                border:1px solid #e5e7eb;
-                border-radius:12px;
-                overflow:hidden;
-            ">
-                <table style="
-                    width:100%;
-                    border-collapse:collapse;
-                    font-size:14px;
-                ">
-                    <thead>
-                        <tr style="background:#f8fafc;">
-                            <th style="
-                                text-align:left;
-                                padding:14px 16px;
-                                border-bottom:1px solid #e5e7eb;
-                            ">
-                                Permission
-                            </th>
-                            <th style="
-                                text-align:left;
-                                padding:14px 16px;
-                                border-bottom:1px solid #e5e7eb;
-                            ">
-                                Risk Level
-                            </th>
-                            <th style="
-                                text-align:left;
-                                padding:14px 16px;
-                                border-bottom:1px solid #e5e7eb;
-                            ">
-                                Description
-                            </th>
-                        </tr>
-                    </thead>
+let rawScore = 0;
+let lowRiskAccumulated = 0;
+let detected = [];
 
-                    <tbody>
-                        {% for perm in permissions %}
-                        <tr>
-                            <td style="
-                                padding:14px 16px;
-                                border-bottom:1px solid #f1f5f9;
-                                font-family:monos
+// Score permissions
+document.querySelectorAll("[data-perm]").forEach(cell => {
+    const perm = cell.dataset.perm;
+    detected.push(perm);
+
+    // Ignore vendor / internal permissions
+    if (
+        !perm.startsWith("android.permission.") &&
+        !perm.startsWith("com.android.vending")
+    ) {
+        cell.textContent = "0";
+        return;
+    }
+
+    if (SENSITIVE_PERMISSIONS[perm]) {
+        rawScore += SENSITIVE_PERMISSIONS[perm];
+        cell.textContent = SENSITIVE_PERMISSIONS[perm];
+        return;
+    }
+
+    if (MEDIUM_PERMISSIONS[perm]) {
+        rawScore += MEDIUM_PERMISSIONS[perm];
+        cell.textContent = MEDIUM_PERMISSIONS[perm];
+        return;
+    }
+
+    // Low-risk permissions (CAPPED)
+    if (lowRiskAccumulated < 10) {
+        rawScore += 1;
+        lowRiskAccumulated += 1;
+        cell.textContent = "1";
+    } else {
+        cell.textContent = "0";
+    }
+});
+
+// Dangerous capability combinations
+if (
+    detected.includes("android.permission.RECORD_AUDIO") &&
+    detected.includes("android.permission.INTERNET")
+) {
+    rawScore += 15;
+}
+
+// Normalize
+const MAX_REASONABLE_RISK = 200;
+const finalScore = Math.min(
+    100,
+    Math.round((rawScore / MAX_REASONABLE_RISK) * 100)
+);
+
+// Rating
+let rating = "Low";
+if (finalScore >= 70) rating = "High";
+else if (finalScore >= 35) rating = "Moderate";
+
+document.getElementById("score").textContent =
+    finalScore + " / 100";
+document.getElementById("rating").textContent =
+    "Overall Risk Rating: " + rating;
+</script>
+
+
+
+</body>
+</html>
